@@ -19,11 +19,11 @@ class Auth(AuthBase):
         if request.body:
             message=b''.join([message, request.body])
        
-        request.headers.update(self._get_auth_headers(timestamp, message))
+        request.headers.update(self.get_auth_headers(timestamp, message))
 
         return request
 
-    def _get_auth_headers(self, timestamp, message):
+    def get_auth_headers(self, timestamp, message):
         hmac_key = base64.b64decode(self.API_SECRET)
         signature = hmac.new(hmac_key, message, hashlib.sha256)
         signature_b64 = base64.b64encode(signature.digest()).decode('utf-8')

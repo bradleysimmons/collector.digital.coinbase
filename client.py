@@ -45,8 +45,3 @@ class Client(object):
     def get_user_id(self):
         self._get('profiles')
         return self._handle_response()[0]['user_id']
-
-    def get_recent_fills(self, product_id):
-        self._get(f'fills?product_id={product_id}')
-        return self._handle_response()
-

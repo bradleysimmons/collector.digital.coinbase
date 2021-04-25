@@ -4,15 +4,15 @@ from auth import Auth
 import time
 import json
 
-class Websocket(object):
+class Websocket():
     def __init__(self, products, user_id):
         self.auth = Auth()
         self.url = 'wss://ws-feed.pro.coinbase.com'
-        self.products = products
+        self.products_dict = {product.data['id']: product for product in products}
         self.user_id = user_id
         self.channels = [
-            {"name": "ticker", "product_ids": self.products},
-            {"name": "user", "product_ids": self.products}
+            {"name": "ticker", "product_ids": list(self.products_dict.keys())},
+            {"name": "user", "product_ids": list(self.products_dict.keys())}
         ]
         self.stop = True
         self.error = None
@@ -33,7 +33,7 @@ class Websocket(object):
         self.thread.start()
 
     def _connect(self):  
-        sub_params = {'type': 'subscribe', 'product_ids': self.products, 'channels': self.channels}
+        sub_params = {'type': 'subscribe', 'product_ids': list(self.products_dict.keys()), 'channels': self.channels}
 
         timestamp = str(time.time())
         message = timestamp + 'GET' + '/users/self/verify'
@@ -92,10 +92,9 @@ class Websocket(object):
         self.stop = True
 
     def on_message(self, msg):
-        print(msg)
 
-        # if msg['type'] in ['ticker']:
-        #     self.products[msg['product_id']].update_market_data(msg)
+        if msg['type'] in ['ticker']:
+            self.products_dict[msg['product_id']].update_data(msg)
 
         # #trading stuff
         # if msg.get('user_id') == self.user_id and msg['type'] == 'done':

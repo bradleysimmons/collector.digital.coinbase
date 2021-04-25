@@ -2,16 +2,20 @@ import React from 'react';
 import {normalizeStringDecimal} from '../helpers.js'
 
 const Portfolio = ({products}) => {
-    const renderedProducts = products.map((product, i) => {
+    const renderedProducts = products.sort((a, b) => {
+      return parseFloat(b.cash_value_s) - parseFloat(a.cash_value_s);
+    }).map((product, i) => {
         return (
-            <React.Fragment>
-                <span key={product.id + '1'} style={{gridRow: i, textAlign: 'right'}}>{product.id.replace('-USD', '')}</span> 
-                <span key={product.id + '2'} style={{gridRow: i, textAlign: 'right'}}>{normalizeStringDecimal(product.price)}</span>
+            <React.Fragment key={product.id}>
+                <span style={{gridRow: i+1, textAlign: 'right'}}>{product.id.replace('-USD', '')}</span> 
+                <span style={{gridRow: i+1, textAlign: 'right'}}>{normalizeStringDecimal(product.price)}</span>
+                <span style={{gridRow: i+1, textAlign: 'right'}}>{normalizeStringDecimal(product.balance)}</span>
+                <span style={{gridRow: i+1, textAlign: 'right'}}>{normalizeStringDecimal(product.cash_value_s)}</span>
             </React.Fragment>
         );
     });
 
-    return <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 7%)'}}>{renderedProducts}</div>;
+    return <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 8%)'}}>{renderedProducts}</div>;
 };
 
 export default Portfolio;

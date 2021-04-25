@@ -22,7 +22,7 @@ class Client(object):
 
     def _handle_response(self):
         if not (200 <= self.response.status_code < 300):
-            raise Exception(self.response.status_code)
+            raise Exception(f'{self.response.status_code}: {self.response.text}')
         try:
             return self.response.json()
         except ValueError:
@@ -30,7 +30,11 @@ class Client(object):
 
     def get_accounts(self):
         self._get('accounts')
-        return [{x['currency']: x['balance']} for x in self._handle_response()]
+        return {x['currency']: x for x in self._handle_response()}
+
+    def get_balance(self, account_id):
+        self._get(f'accounts/{account_id}')
+        return self._handle_response()['balance']
 
     def get_products(self, quote_currency=None):
         self._get('products')
@@ -41,4 +45,3 @@ class Client(object):
     def get_user_id(self):
         self._get('profiles')
         return self._handle_response()[0]['user_id']
-

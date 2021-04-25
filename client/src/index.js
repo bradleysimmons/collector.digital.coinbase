@@ -1,11 +1,13 @@
 import React, {useEffect, useState, useRef} from 'react';
 import ReactDOM from 'react-dom';
 import './App.css'
+import Products from './components/Products';
 import Portfolio from './components/Portfolio';
 
 
 const App = () => {
     const [products, setProducts] = useState([]);
+    const [portfolio, setPortfolio] = useState([]);
     const ws = useRef(null);
 
     useEffect(() => {
@@ -21,13 +23,15 @@ const App = () => {
     useEffect(() => {
         if (!ws.current) return;
         ws.current.onmessage = e => {
-            setProducts(JSON.parse(e.data));
+            setPortfolio(JSON.parse(e.data)['portfolio']);
+            setProducts(JSON.parse(e.data)['products']);
         };
     }, []);
 
     return (
-        <div>
-            <Portfolio products={products} />
+        <div style={{display: 'grid', gridTemplateColumns: '75% 25%'}}>
+            <Products products={products} />
+            <Portfolio portfolio={portfolio} />
         </div>
     )
 };

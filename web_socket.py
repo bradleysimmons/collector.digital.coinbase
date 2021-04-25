@@ -5,10 +5,11 @@ import time
 import json
 
 class Websocket():
-    def __init__(self, products, user_id):
+    def __init__(self, products, portfolio, user_id):
         self.auth = Auth()
         self.url = 'wss://ws-feed.pro.coinbase.com'
         self.products_dict = {product.data['product_id']: product for product in products}
+        self.portfolio = portfolio
         self.user_id = user_id
         self.channels = [
             {"name": "ticker", "product_ids": list(self.products_dict.keys())},
@@ -94,7 +95,10 @@ class Websocket():
     def on_message(self, msg):
         if msg['type'] in ['ticker']:
             self.products_dict[msg['product_id']].update_data(msg)
+            self.portfolio.set_cash_value()
 
         if msg.get('user_id') == self.user_id and msg['type'] == 'done':
             self.products_dict[msg['product_id']].set_balance()
+            self.portfolio.set_cash_value()
+            self.portfolio.set_cash_balance()
 

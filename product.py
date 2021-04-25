@@ -4,4 +4,6 @@ class Product():
 
     def update_data(self, data):
         self.data.update(data)
-        print(self.data)
+
+    def get_data(self):
+        return self.data

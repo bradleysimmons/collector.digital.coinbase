@@ -1,17 +1,38 @@
-import React from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import './App.css'
+import Portfolio from './components/Portfolio';
+
+
+const App = () => {
+    const [products, setProducts] = useState([]);
+    const ws = useRef(null);
+
+    useEffect(() => {
+        ws.current = new WebSocket("ws://127.0.0.1:8888/");
+        ws.current.onopen = () => console.log("ws opened");
+        ws.current.onclose = () => console.log("ws closed");
+
+        return () => {
+            ws.current.close();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (!ws.current) return;
+        ws.current.onmessage = e => {
+            setProducts(JSON.parse(e.data));
+        };
+    }, []);
+
+    return (
+        <div>
+            <Portfolio products={products} />
+        </div>
+    )
+};
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
+    <App />, 
+    document.querySelector('#root')
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

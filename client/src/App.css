@@ -1,4 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inconsolata&display=swap');
 
 
-* {font-family: 'Inconsolata', monospace;}
+* {
+    font-family: 'Inconsolata', monospace;
+    font-size: 20px;
+}

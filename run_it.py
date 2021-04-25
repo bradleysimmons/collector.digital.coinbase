@@ -10,7 +10,12 @@ import json
 
 def main():
     client = Client()
-    products = [Product(x) for x in client.get_products(quote_currency='USD') if x['id'] not in excluded_products]
+    accounts = client.get_accounts()
+    products = [Product(x, client, accounts[x['base_currency']]) 
+                for x in client.get_products(quote_currency='USD') 
+                if x['id'] not in excluded_products]
+
+    #incoming websocket from coinbase
     websocket = Websocket(products, client.get_user_id())
     websocket.start()
     # websocket to serve react client
@@ -21,8 +26,10 @@ def main():
 
 async def handler(websocket, path, products):
     while True:
-        await websocket.send(json.dumps([x.get_data() for x in products]))
+        await websocket.send(json.dumps([x.get_data(string_v=True) for x in products]))
         await asyncio.sleep(1)
+
+
 
 if __name__ == "__main__":
     main()

@@ -8,7 +8,7 @@ class Websocket():
     def __init__(self, products, user_id):
         self.auth = Auth()
         self.url = 'wss://ws-feed.pro.coinbase.com'
-        self.products_dict = {product.data['id']: product for product in products}
+        self.products_dict = {product.data['product_id']: product for product in products}
         self.user_id = user_id
         self.channels = [
             {"name": "ticker", "product_ids": list(self.products_dict.keys())},
@@ -92,11 +92,9 @@ class Websocket():
         self.stop = True
 
     def on_message(self, msg):
-
         if msg['type'] in ['ticker']:
             self.products_dict[msg['product_id']].update_data(msg)
 
-        # #trading stuff
-        # if msg.get('user_id') == self.user_id and msg['type'] == 'done':
-        #     self.products[msg['product_id']].get_fills_before()
+        if msg.get('user_id') == self.user_id and msg['type'] == 'done':
+            self.products_dict[msg['product_id']].set_balance()
 

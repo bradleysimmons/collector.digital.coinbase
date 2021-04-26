@@ -2,11 +2,11 @@ import React from 'react';
 import {normalizeStringDecimal} from '../helpers.js'
 
 const Portfolio = ({portfolio}) => {
-    console.log(portfolio)
     return (
-        <div>
-            <span style={{alignText: 'right'}}>cash value: {normalizeStringDecimal(portfolio.cash_value)}</span><br/>
-            <span style={{alignText: 'right'}}>cash balance: {normalizeStringDecimal(portfolio.cash_balance)}</span>
+        <div style={{display: 'flex', flexDirection: 'column'}}>
+            <span style={{marginLeft: 'auto'}}>portfolio balance: {normalizeStringDecimal(portfolio.portfolio_balance)}</span>
+            <span style={{marginLeft: 'auto'}}>cash value: {normalizeStringDecimal(portfolio.cash_value)}</span>
+            <span style={{marginLeft: 'auto'}}>cash balance: {normalizeStringDecimal(portfolio.cash_balance)}</span>
         </div>
     );
 };

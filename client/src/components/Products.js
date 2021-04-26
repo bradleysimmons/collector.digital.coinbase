@@ -11,11 +11,12 @@ const Products = ({products}) => {
                 <span style={{gridRow: i+1, textAlign: 'right'}}>{normalizeStringDecimal(product.price)}</span>
                 <span style={{gridRow: i+1, textAlign: 'right'}}>{normalizeStringDecimal(product.balance)}</span>
                 <span style={{gridRow: i+1, textAlign: 'right'}}>{normalizeStringDecimal(product.cash_value_s)}</span>
+                <span style={{gridRow: i+1, textAlign: 'right'}}>{normalizeStringDecimal(product.mean_delta)}</span>
             </React.Fragment>
         );
     });
 
-    return <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 12%)'}}>{renderedProducts}</div>;
+    return <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, 12%)'}}>{renderedProducts}</div>;
 };
 
 export default Products;

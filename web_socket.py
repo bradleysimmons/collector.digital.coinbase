@@ -96,9 +96,13 @@ class Websocket():
         if msg['type'] in ['ticker']:
             self.products_dict[msg['product_id']].update_data(msg)
             self.portfolio.set_cash_value()
+            self.portfolio.set_portfolio_balance()
+            self.portfolio.set_mean_value()
+            self.products_dict[msg['product_id']].check_threshold()
 
         if msg.get('user_id') == self.user_id and msg['type'] == 'done':
             self.products_dict[msg['product_id']].set_balance()
             self.portfolio.set_cash_value()
             self.portfolio.set_cash_balance()
+            self.portfolio.set_portfolio_balance()
 

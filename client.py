@@ -50,4 +50,14 @@ class Client(object):
         self._get('fees')
         return self._handle_response()['taker_fee_rate']
 
-    
+    def place_order(self, product_id, size, price, side):
+        self._post('orders', 
+            {
+                'size': str(size),
+                'price': str(price),
+                'side': side,
+                'product_id': product_id,
+                'time_in_force': 'GTT',
+                'cancel_after': 'min'
+            }
+        )

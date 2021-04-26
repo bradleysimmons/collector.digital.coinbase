@@ -81,6 +81,7 @@ class Websocket():
         self.stop = True   
         self._disconnect() 
         self.thread.join()
+        self.start() #reconnect
 
     def on_open(self):
         print('websocket connected')
@@ -105,4 +106,5 @@ class Websocket():
             self.portfolio.set_cash_value()
             self.portfolio.set_cash_balance()
             self.portfolio.set_portfolio_balance()
+            self.portfolio.set_wait_until(time.time())
 

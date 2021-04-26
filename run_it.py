@@ -1,6 +1,6 @@
 from client import Client
 from web_socket import Websocket
-from config import excluded_products
+from config import excluded_products, threshold
 from product import Product
 from portfolio import Portfolio
 import time
@@ -12,7 +12,7 @@ import json
 def main():
     client = Client()
     accounts = client.get_accounts()
-    products = [Product(x, client, accounts[x['base_currency']]) 
+    products = [Product(x, client, accounts[x['base_currency']], threshold) 
                 for x in client.get_products(quote_currency='USD') 
                 if x['id'] not in excluded_products]
     portfolio = Portfolio(products, accounts['USD'], client)

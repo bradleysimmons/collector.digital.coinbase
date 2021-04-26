@@ -45,3 +45,9 @@ class Client(object):
     def get_user_id(self):
         self._get('profiles')
         return self._handle_response()[0]['user_id']
+
+    def get_taker_fee_rate(self):
+        self._get('fees')
+        return self._handle_response()['taker_fee_rate']
+
+    

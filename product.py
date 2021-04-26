@@ -53,11 +53,7 @@ class Product():
                     self._sell()
                 if (self.data['mean_delta'] <= self.threshold * -1 #threshold is low
                     and self.buy_wait_until < time.time()): #no requests out
-                    self._buy()
-                
-                
-            
-                
+                    self._buy()     
 
     def _get_sell_price(self):
         return Decimal(self.data['best_ask']) - Decimal(self.data['quote_increment'])

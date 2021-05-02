@@ -1,5 +1,5 @@
 from client import Client
-from web_socket import Websocket
+from websocket_client import CoinbaseWebsocket
 from config import excluded_products, threshold, included_products
 from product import Product
 from portfolio import Portfolio
@@ -9,6 +9,7 @@ import functools
 import asyncio
 import json
 import argparse
+import websocket_client
 
 # pass seed to distribute cash across products
 parser = argparse.ArgumentParser()
@@ -26,18 +27,9 @@ def main():
                                                            # could have done this more smoothly
 
     # incoming websocket from coinbase
-    websocket = Websocket(products, portfolio, client.get_user_id())
-    websocket.start()
-    # websocket to serve react client
-    start_server = websockets.serve(functools.partial(handler, portfolio=portfolio), "127.0.0.1", 8888)
-    asyncio.get_event_loop().run_until_complete(start_server)
-    asyncio.get_event_loop().run_forever()
+    coinbase_websocket = CoinbaseWebsocket(portfolio, client.get_user_id())
+    coinbase_websocket.run()
 
-
-async def handler(websocket, path, portfolio):
-    while True:
-        await websocket.send(json.dumps(portfolio.get_websocket_data()))
-        await asyncio.sleep(1)
 
 if __name__ == "__main__":
     main()

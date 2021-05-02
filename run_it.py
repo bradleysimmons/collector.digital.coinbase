@@ -1,6 +1,7 @@
 from client import Client
-from websocket_client import CoinbaseWebsocket
-from config import excluded_products, threshold, included_products
+from websocket_client import WebsocketClient
+from websocket_server import WebsocketServer
+from config import excluded_products, included_products
 from product import Product
 from portfolio import Portfolio
 import time
@@ -18,17 +19,22 @@ args = parser.parse_args()
 
 def main():
     client = Client()  # for interacting with coinbase api
+    user_id = client.get_user_id()
     accounts = client.get_accounts() # get existing balances
-    products = [Product(x, client, accounts[x['base_currency']], threshold) 
-                for x in client.get_products(quote_currency='USD') 
-                if x['id'] in included_products] # instantiate some products based on included_products list
-    portfolio = Portfolio(products, accounts['USD'], client, args.seed) # portfolio is for collection level attributes / behavior
-    for product in products: product.portfolio = portfolio # passed it back down to get some attributes on the product level
-                                                           # could have done this more smoothly
 
+    product_ids = [x for x in client.get_products(quote_currency='USD') 
+                    if x['id'] in included_products] # instantiate some products based on included_products list
+    portfolio = Portfolio(product_ids, accounts, client, args.seed, user_id) # portfolio is for collection level attributes / behavior
+    
     # incoming websocket from coinbase
-    coinbase_websocket = CoinbaseWebsocket(portfolio, client.get_user_id())
-    coinbase_websocket.run()
+    coinbase_websocket = WebsocketClient(portfolio)
+    # outgoing websocket to web client
+    webclient_websocket = WebsocketServer(portfolio)
+
+    asyncio.run(run_websockets(coinbase_websocket, webclient_websocket))
+
+async def run_websockets(coinbase_websocket, webclient_websocket):
+    await asyncio.gather(coinbase_websocket.init_websocket(), webclient_websocket.serve_websocket())
 
 
 if __name__ == "__main__":

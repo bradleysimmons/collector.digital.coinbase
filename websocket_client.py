@@ -4,14 +4,13 @@ import json
 import time
 from auth import Auth
 
-class CoinbaseWebsocket():
-    def __init__(self, portfolio, user_id):
+class WebsocketClient():
+    def __init__(self, portfolio):
         self.auth = Auth()
         self.url = 'wss://ws-feed.pro.coinbase.com'
         self.portfolio = portfolio
         self.products_dict = {product.data['product_id']: product for product in portfolio.products}
         self.product_ids = list(self.products_dict.keys())
-        self.user_id = user_id
         self.channels = [
             {"name": "ticker", "product_ids": self.product_ids},
             {"name": "user", "product_ids": self.product_ids}
@@ -39,8 +38,8 @@ class CoinbaseWebsocket():
 
             while True:
                 message = await websocket.recv()
-                self.portfolio.handle_ticker_message(message)
+                self.portfolio.handle_ticker_message(json.loads(message))
 
-    def run(self):
-        asyncio.get_event_loop().run_until_complete(self.init_websocket())
-        asyncio.get_event_loop().run_forever()
+
+
+

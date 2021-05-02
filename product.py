@@ -3,10 +3,11 @@ from helpers import calculate_delta
 import time
 
 class Product():
-    def __init__(self, data, client, account, threshold):
+    def __init__(self, data, client, account, threshold, portfolio):
         self._init_data(data, account)
         self.client = client
         self.threshold = threshold
+        self.portfolio = portfolio
 
     # data is a dict, just update directly from ticket websocket
     def update_data(self, data):
@@ -25,7 +26,7 @@ class Product():
     # percent difference from mean
     def update_mean_delta(self):
         if self.portfolio.get_is_trade_ready():
-            self.data['mean_delta'] = calculate_delta(mean, self.data['cash_value'])
+            self.data['mean_delta'] = calculate_delta(self.portfolio.mean_value, self.data['cash_value'])
 
     # when ticker info comes in, check percent difference from mean, buy or sell if outside threshold
     def check_threshold(self):

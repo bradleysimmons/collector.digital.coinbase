@@ -4,12 +4,13 @@ import time
 from config import threshold
 
 class Portfolio():
-    def __init__(self, products, accounts, client, seed, user_id):
-        self.products = [Product(x, client, accounts[x['base_currency']], threshold, self) for x in products]
+    def __init__(self, products, client, seed):
+        self.user_id = client.get_user_id()
+        self.accounts = client.get_accounts() # get existing balances
+        self.products = [Product(x, client, self.accounts[x['base_currency']], threshold, self) for x in products]
         self.products_dict = {product.data['product_id']: product for product in self.products}
-        self.cash_balance = accounts['USD']['balance']
-        self.usd_account_id = accounts['USD']['id']
-        self.user_id = user_id
+        self.cash_balance = self.accounts['USD']['balance']
+        self.usd_account_id = self.accounts['USD']['id']
         self.client = client
         self.set_cash_value()
         self.set_portfolio_balance()

@@ -1,11 +1,15 @@
+from product import Product
 from decimal import Decimal
 import time
+from config import threshold
 
 class Portfolio():
-    def __init__(self, products, usd_account, client, seed):
-        self.products = products
-        self.cash_balance = usd_account['balance']
-        self.usd_account_id = usd_account['id']
+    def __init__(self, products, accounts, client, seed, user_id):
+        self.products = [Product(x, client, accounts[x['base_currency']], threshold, self) for x in products]
+        self.products_dict = {product.data['product_id']: product for product in self.products}
+        self.cash_balance = accounts['USD']['balance']
+        self.usd_account_id = accounts['USD']['id']
+        self.user_id = user_id
         self.client = client
         self.set_cash_value()
         self.set_portfolio_balance()
@@ -33,7 +37,6 @@ class Portfolio():
 
     def set_mean_value(self):
         self.mean_value = self.cash_value / len(self.products)
-        for product in self.products: product.update_mean_delta(self.mean_value)
 
     def _get_target_mean(self):
         return self.portfolio_balance / len(self.products)
@@ -55,6 +58,24 @@ class Portfolio():
     def seed_it(self):
         for product in self.products: 
             product.seed()
+
+    def handle_ticker_message(self, message):
+        print(message['type'])
+        if message['type'] in ['ticker']:
+            self.products_dict[message['product_id']].update_data(message)
+            self.set_cash_value()
+            self.set_portfolio_balance()
+            self.set_mean_value()
+            self.products_dict[message['product_id']].update_mean_delta()
+            self.products_dict[message['product_id']].check_threshold()
+
+        if message.get('user_id') == self.user_id and message['type'] == 'done':
+            self.products_dict[message['product_id']].set_balance()
+            self.set_cash_value()
+            self.set_cash_balance()
+            self.set_portfolio_balance()
+            self.set_wait_until(time.time())
+
 
 
 

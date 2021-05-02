@@ -3,10 +3,11 @@ from helpers import calculate_delta
 import time
 
 class Product():
-    def __init__(self, data, client, account, threshold):
+    def __init__(self, data, client, account, threshold, portfolio):
         self._init_data(data, account)
         self.client = client
         self.threshold = threshold
+        self.portfolio = portfolio
 
     # data is a dict, just update directly from ticket websocket
     def update_data(self, data):
@@ -23,15 +24,18 @@ class Product():
         else: return self.data if not string_v else {k: str(self.data[k]) for k in self.data}
 
     # percent difference from mean
-    def update_mean_delta(self, mean):
-        if self.portfolio.get_is_trade_ready() and mean:
-            self.data['portfolio_mean'] = mean #probably should be in portfolio class, but this is convenient
-            self.data['mean_delta'] = calculate_delta(mean, self.data['cash_value'])
+    def update_mean_delta(self):
+        if self.portfolio.get_is_trade_ready():
+            self.data['mean_delta'] = calculate_delta(self.portfolio.mean_value, self.data['cash_value'])
 
     # when ticker info comes in, check percent difference from mean, buy or sell if outside threshold
     def check_threshold(self):
         if self.portfolio.get_is_trade_ready() and not self.portfolio.seed:
             if self.data.get('mean_delta'):
+                print(self.data['product_id'])
+                print(self.data['mean_delta'])
+                print(self.data['mean_delta'] >= self.threshold)
+                print(self.data['mean_delta'] <= self.threshold * -1)
                 if (self.data['mean_delta'] >= self.threshold
                     and self.portfolio.wait_until < time.time()):
                     self._sell()
@@ -68,7 +72,9 @@ class Product():
         return self._round_price(price)
 
     def _get_sell_size(self, price):
-        amount_over_mean = Decimal(self.data['cash_value']) - Decimal(self.data['portfolio_mean'])
+        print(self.portfolio.mean_value)
+        print('mean')
+        amount_over_mean = Decimal(self.data['cash_value']) - Decimal(self.portfolio.mean_value)
         return self._round_size(amount_over_mean / Decimal(price))
 
     def _get_buy_price(self):
@@ -76,7 +82,7 @@ class Product():
         return self._round_price(price)
 
     def _get_buy_size(self, price):
-        amount_under_mean = Decimal(self.data['portfolio_mean']) - Decimal(self.data['cash_value'])
+        amount_under_mean = Decimal(self.portfolio.mean_value) - Decimal(self.data['cash_value'])
         return self._round_size(amount_under_mean / Decimal(price))
 
     def _get_seed_size(self, price):
@@ -102,17 +108,29 @@ class Product():
         price = self._get_buy_price()
         size = self._get_buy_size(price)
         size = size if self._is_base_min(size) and not minimum else self.data['base_min_size']
-        self.client.place_order(product_id=self.data['product_id'], 
-                                size=size, price=price, side='buy')
+        print(self.data['product_id'])
+        print('buy')
+        print(size)
+        print(price)
+        # self.client.place_order(product_id=self.data['product_id'], 
+        #                         size=size, price=price, side='buy')
+        print(self.portfolio.wait_until)
         self.portfolio.set_wait_until(time.time() + 61)
+        print(self.portfolio.wait_until)
 
     def _sell(self):
         price = self._get_sell_price()
         size = self._get_sell_size(price)
         size = size if self._is_base_min(size) else self.data['base_min_size']
-        self.client.place_order(product_id=self.data['product_id'], 
-                                size=size, price=price, side='sell')
+        print(self.data['product_id'])
+        print('sell')
+        print(size)
+        print(price)
+        # self.client.place_order(product_id=self.data['product_id'], 
+        #                         size=size, price=price, side='sell')
+        print(self.portfolio.wait_until)
         self.portfolio.set_wait_until(time.time() + 61)
+        print(self.portfolio.wait_until)
 
 
 

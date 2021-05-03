@@ -3,15 +3,15 @@ import {normalizeStringDecimal} from '../helpers.js'
 
 const Products = ({products}) => {
     const renderedProducts = products.sort((a, b) => {
-      return parseFloat(b.cash_value_s) - parseFloat(a.cash_value_s);
+      return parseFloat(b.cash_value) - parseFloat(a.cash_value);
     }).map((product, i) => {
         return (
-            <React.Fragment key={product.id}>
-                <span style={{gridRow: i+2, textAlign: 'right'}}>{product.id.replace('-USD', '')}</span> 
+            <React.Fragment key={product.product_id}>
+                <span style={{gridRow: i+2, textAlign: 'right'}}>{product.base_currency}</span> 
                 <span style={{gridRow: i+2, textAlign: 'right'}}>{normalizeStringDecimal(product.price)}</span>
                 <span style={{gridRow: i+2, textAlign: 'right'}}>{normalizeStringDecimal(product.balance)}</span>
-                <span style={{gridRow: i+2, textAlign: 'right'}}>{normalizeStringDecimal(product.cash_value_s)}</span>
-                <span style={{gridRow: i+2, textAlign: 'right'}}>{normalizeStringDecimal(product.mean_delta)}</span>
+                <span style={{gridRow: i+2, textAlign: 'right'}}>{normalizeStringDecimal(product.cash_value)}</span>
+                <span style={{gridRow: i+2, textAlign: 'right'}}>{normalizeStringDecimal(product.mean_diff)}</span>
             </React.Fragment>
         );
     });
@@ -24,12 +24,12 @@ const Products = ({products}) => {
     }
 
     return (
-        <div style={{display: 'grid', gridTemplateColumns: 'repeat(5, 12%)'}}>
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(6, 15%)'}}>
             <span style={headerStyle}></span> 
             <span style={headerStyle}>price</span>
             <span style={headerStyle}>balance</span>
             <span style={headerStyle}>value</span>
-            <span style={headerStyle}>diff</span>
+            <span style={headerStyle}>difference %</span>
             {renderedProducts}
         </div>
     );

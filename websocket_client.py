@@ -9,7 +9,7 @@ class WebsocketClient():
         self.auth = Auth()
         self.url = 'wss://ws-feed.pro.coinbase.com'
         self.portfolio = portfolio
-        self.products_dict = {product.data['product_id']: product for product in portfolio.products}
+        self.products_dict = {product.product_id: product for product in portfolio.products}
         self.product_ids = list(self.products_dict.keys())
         self.channels = [
             {"name": "ticker", "product_ids": self.product_ids},

@@ -21,17 +21,11 @@ def main():
     # outgoing websocket to web client
     webclient_websocket = WebsocketServer(portfolio)
 
-    reconnects = 0
 
-    try:
-        asyncio.run(run_websockets(coinbase_websocket, webclient_websocket))
-    except:
-        if reconnects < 5:
-            print('reconnecting')
-            coinbase_websocket = WebsocketClient(portfolio)
-            webclient_websocket = WebsocketServer(portfolio)
-            asyncio.run(run_websockets(coinbase_websocket, webclient_websocket))
-            reconnects += 1
+
+    
+    asyncio.run(run_websockets(coinbase_websocket, webclient_websocket))
+    
 
 async def run_websockets(coinbase_websocket, webclient_websocket):
     await asyncio.gather(coinbase_websocket.init_websocket(), webclient_websocket.serve_websocket())

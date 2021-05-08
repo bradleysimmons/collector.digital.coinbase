@@ -18,28 +18,46 @@ class WebsocketClient():
 
     async def init_websocket(self):
         uri = "wss://ws-feed.pro.coinbase.com"
-        async with websockets.connect(uri) as websocket:
+        while True:
+            print('connecting')
+            try:
+                async with websockets.connect(uri) as websocket:
 
-            timestamp = str(time.time())
-            message = timestamp + 'GET' + '/users/self/verify'
-            auth_headers = Auth().get_auth_headers(timestamp, message.encode('ascii'))
-            
-            params = {
-                'type': 'subscribe', 
-                'product_ids': self.product_ids, 
-                'channels': self.channels,
-                'signature': auth_headers['CB-ACCESS-SIGN'],
-                'key': auth_headers['CB-ACCESS-KEY'],
-                'passphrase': auth_headers['CB-ACCESS-PASSPHRASE'],
-                'timestamp': auth_headers['CB-ACCESS-TIMESTAMP']
-            }
-            
-            await websocket.send(json.dumps(params))
+                    timestamp = str(time.time())
+                    message = timestamp + 'GET' + '/users/self/verify'
+                    auth_headers = Auth().get_auth_headers(timestamp, message.encode('ascii'))
+                    
+                    params = {
+                        'type': 'subscribe', 
+                        'product_ids': self.product_ids, 
+                        'channels': self.channels,
+                        'signature': auth_headers['CB-ACCESS-SIGN'],
+                        'key': auth_headers['CB-ACCESS-KEY'],
+                        'passphrase': auth_headers['CB-ACCESS-PASSPHRASE'],
+                        'timestamp': auth_headers['CB-ACCESS-TIMESTAMP']
+                    }
+                    
+                    await websocket.send(json.dumps(params))
 
-            while True:
-                message = await websocket.recv()
-                self.portfolio.handle_ticker_message(json.loads(message))
-
+                    while True:
+                        try:
+                            message = await websocket.recv()
+                            self.portfolio.handle_ticker_message(json.loads(message))
+                        except (asyncio.TimeoutError, websockets.exceptions.ConnectionClosed):
+                            try:
+                                pong = await websocket.ping()
+                                await asyncio.wait_for(pong)
+                                print('pong success')
+                                continue
+                            except:
+                                print('pong fail')
+                                await asyncio.sleep(5)
+                                break
+            except Exception as e:
+                print('reconnect failed:')
+                print(e)
+                await asyncio.sleep(5)
+                continue
 
 
 

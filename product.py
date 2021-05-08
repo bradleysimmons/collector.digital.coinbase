@@ -23,8 +23,23 @@ class Product():
         self.client = client #for api calls
         self.portfolio = portfolio #to get to the collection level attributes/actions
         self.wait_until = time.time()
+        self.action = None
+        # summary metrics
+        self.opening_cash_value = None
+        self.opening_price = None
+        self.market_delta = None
+        self.portfolio_delta = None
+        self.opening_balance = 0
+        self.balance_delta = 0
+        #
+        self.trade_counter = 0
+
 
     def update_data(self, data):
+        if not self.price:
+            self.opening_cash_value = Decimal(data['price']) * self.balance
+            self.opening_price = Decimal(data['price'])
+            self.opening_balance = self.balance 
         self.price = Decimal(data['price'])
         self.open_24h = Decimal(data['open_24h'])
         self.low_24h = Decimal(data['low_24h'])
@@ -32,18 +47,32 @@ class Product():
         self.best_bid = Decimal(data['best_bid'])
         self.best_ask = Decimal(data['best_ask'])
         self._set_cash_value() # calculation based on price
+        self._set_24h_delta()
         self._set_trade_minimum()
+        self._set_market_delta()
+        self._set_portfolio_delta()
 
      # calculates real time value from ticker price
     def _set_cash_value(self):
         self.cash_value = self.price * self.balance
 
+    def _set_24h_delta(self):
+        self.delta_24h = calculate_delta(self.open_24h, self.price)
+
+    def _set_market_delta(self):
+        self.market_delta = calculate_delta(self.opening_price, self.price)
+
+    def _set_portfolio_delta(self):
+        self.portfolio_delta = calculate_delta(self.opening_cash_value, self.cash_value)
+
     # when a trade is confirmed
     def set_balance(self):
         self.balance = Decimal(self.client.get_balance(self.account_id))
+        self.balance_delta = self.balance - self.opening_balance
 
     def get_data(self):
-        keys = ['product_id', 'cash_value', 'price', 'balance', 'mean_diff', 'base_currency']
+        keys = ['product_id', 'cash_value', 'price', 'balance', 'balance_delta',
+                'mean_diff', 'base_currency', 'delta_24h', 'market_delta', 'trade_minimum']
         return {k: str(getattr(self, k)) for k in keys}
 
     # percent difference from mean
@@ -54,8 +83,17 @@ class Product():
     def is_within_min_cost_of_mean(self):
         return abs(self.portfolio.target_mean - self.cash_value) < self.trade_minimum
 
+    def action_would_bring_closer_to_mean(self):
+        if self._need_to_buy_some():
+            return abs(self.mean_diff) > abs(calculate_delta(self.cash_value, self.cash_value + self.trade_minimum))
+        if self._need_to_sell_some():
+            return self.mean_diff > abs(calculate_delta(self.cash_value, self.cash_value - self.trade_minimum))
+
+    def set_trade_counter(self, value):
+        self.trade_counter = value
+
     def handle_balancing(self):
-        if self.portfolio.balancing and not self.is_within_min_cost_of_mean():
+        if self.portfolio.balancing and not self.trade_counter and not self.is_within_min_cost_of_mean():
             if self._need_to_buy_some() and self.wait_until < time.time():
                 self._buy()
             if self._need_to_sell_some() and self.wait_until < time.time():
